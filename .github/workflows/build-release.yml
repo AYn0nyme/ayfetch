@@ -16,14 +16,23 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.21'
+        go-version: '1.23.4'
 
     - name: Build project
       run: go build -o dist/ayfetch main.go
 
+    - name: Create Git Tag
+      run: |
+        TAG="v$(date +'%Y.%m.%d')"
+        git tag $TAG
+        git push origin $TAG
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: ${{ github.ref_name }}
         files: dist/ayfetch
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
