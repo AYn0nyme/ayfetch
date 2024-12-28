@@ -31,7 +31,7 @@ jobs:
     - name: Create Git Tag
       id: tag_creation
       run: |
-        TAG="v${{ env.VERSION }}"
+        TAG="${{ env.VERSION }}"
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git tag $TAG
