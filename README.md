@@ -18,5 +18,5 @@ go build
 ```
 And finally, you can run it
 ```bash
-ayfetch
+./ayfetch
 ```
