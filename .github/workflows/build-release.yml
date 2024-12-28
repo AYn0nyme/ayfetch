@@ -25,19 +25,21 @@ jobs:
       run: go build -o dist/ayfetch main.go
 
     - name: Create Git Tag
+      id: tag_creation
       run: |
         TAG="v$(date +'%Y.%m.%d')"
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git tag $TAG
         git push origin $TAG
+        echo "tag_name=$TAG" >> $GITHUB_ENV
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref_name }}
+        tag_name: ${{ env.tag_name }}
         files: dist/ayfetch
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
