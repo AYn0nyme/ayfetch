@@ -1,4 +1,4 @@
-# ayfetch
+# ayfetch 😃
 
 ayfetch is a simple fetch with emojis. 😃
 
