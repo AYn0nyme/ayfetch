@@ -73,5 +73,5 @@ func main() {
 		log.Fatal("Can't get hostname. Please check your /etc/hostname file.")
 	}
 
-	fmt.Printf("\n💾 ∙ OS:       %s\n🔧 ∙ CPU:      %s | %s cores\n🧠 ∙ RAM:      %s/%s\n🧑‍💻 ∙ User:     %s\n🏠 ∙ Hostname: %s\n\n", osRelease[1], cpuInfo.ModelName, cpuInfo.Cores, memInfo.Used, memInfo.Total, username, hostname)
+	fmt.Printf("\n💾 ∙ OS:       %s\n🔧 ∙ CPU:      %s | %s cores\n🧠 ∙ RAM:      %s/%s\n🧑 ∙ User:     %s\n🏠 ∙ Hostname: %s\n\n", osRelease[1], cpuInfo.ModelName, cpuInfo.Cores, memInfo.Used, memInfo.Total, username, hostname)
 }
