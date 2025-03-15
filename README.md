@@ -2,6 +2,8 @@
 
 ayfetch is a simple fetch with emojis. 😃
 
+![](assets/screenshot.png) 
+
 ## Build instructions
 
 First, clone the repo
