@@ -17,6 +17,14 @@ type RAMInfo struct {
 	Total     string
 	Used      string
 	Available string
+	Percent   float64
+}
+
+type DiskInfo struct {
+	Total     uint64
+	Used      uint64
+	Available uint64
+	Percent   float64
 }
 
 // Mem = /proc/meminfo
@@ -28,7 +36,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Can't read os-release (/etc/os-release)")
 	}
-
+	// Get raw content of /proc/version
+	kernelContent, err := os.ReadFile("/proc/version")
+	if err != nil {
+		log.Fatal("Can't read /proc/version")
+	}
 	// Get raw content of /proc/cpuinfo (CPU Infos)
 	cpuContent, err := os.ReadFile("/proc/cpuinfo")
 	if err != nil {
@@ -40,11 +52,13 @@ func main() {
 	if err != nil {
 		log.Fatal("Can't read /proc/meminfo")
 	}
-
 	// Regex that only takes element wich are between ""
 	reg := regexp.MustCompile(`"([^"]+)"`)
 	// OS Release (e.g. Arch Linux)
 	osRelease := reg.FindStringSubmatch(strings.Split(string(osReleaseContent), "\n")[1])
+	// Kernel (e.g. Linux 6.18.13-arch1-1)
+	kernel := strings.Fields(string(kernelContent))[0]
+	kernelVersion := regexp.MustCompile(`version ([^\s]+)`).FindStringSubmatch(string(kernelContent))[1]
 	// CPU Info
 
 	regModel := regexp.MustCompile(`(?m)^model name\s+:\s+(.+)`)
@@ -64,6 +78,8 @@ func main() {
 	memInfo.Used = fmt.Sprintf("%d MB", usedMem/1024)
 	memInfo.Total = fmt.Sprintf("%d MB", totalMem/1024)
 	memInfo.Available = fmt.Sprintf("%d MB", avMem/1024)
+	memInfo.Percent = (float64(usedMem) / float64(totalMem)) * 100
+
 	// Username
 	username := os.Getenv("USER")
 	// Hostname
@@ -73,5 +89,5 @@ func main() {
 		log.Fatal("Can't get hostname. Please check your /etc/hostname file.")
 	}
 
-	fmt.Printf("\n💾 ∙ OS:       %s\n🔧 ∙ CPU:      %s | %s cores\n🧠 ∙ RAM:      %s/%s\n🧑 ∙ User:     %s\n🏠 ∙ Hostname: %s\n\n", osRelease[1], cpuInfo.ModelName, cpuInfo.Cores, memInfo.Used, memInfo.Total, username, hostname)
+	fmt.Printf("\n💾 ∙ OS:       %s\n🐧 ∙ Kernel    %s %s\n🔧 ∙ CPU:      %s | %s cores\n🧠 ∙ RAM:      %s/%s (%.1f%%)\n🧑 ∙ User:     %s\n🏠 ∙ Hostname: %s\n\n", osRelease[1], kernel, kernelVersion, cpuInfo.ModelName, cpuInfo.Cores, memInfo.Used, memInfo.Total, memInfo.Percent, username, hostname)
 }
