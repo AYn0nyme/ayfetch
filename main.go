@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/shirou/gopsutil/v4/disk"
 )
 
 type CPUInfo struct {
@@ -21,10 +23,10 @@ type RAMInfo struct {
 }
 
 type DiskInfo struct {
-	Total     uint64
-	Used      uint64
-	Available uint64
-	Percent   float64
+	Total    uint64
+	Used     uint64
+	MainPart string
+	Percent  float64
 }
 
 // Mem = /proc/meminfo
@@ -80,6 +82,27 @@ func main() {
 	memInfo.Available = fmt.Sprintf("%d MB", avMem/1024)
 	memInfo.Percent = (float64(usedMem) / float64(totalMem)) * 100
 
+	// Get disk space
+	partitions, err := disk.Partitions(true)
+	if err != nil {
+		log.Fatal("Can't access partitions.")
+	}
+	var diskContent DiskInfo
+	for _, partition := range partitions {
+		if partition.Mountpoint == "/" {
+			diskContent.MainPart = partition.Mountpoint
+			diskSpace, err := disk.Usage(diskContent.MainPart)
+			if err != nil {
+				log.Fatal("Can't read disks.")
+			}
+			diskContent.Total = diskSpace.Total / (1024 * 1024)
+			diskContent.Used = diskSpace.Used / (1024 * 1024)
+			diskContent.Percent = diskSpace.UsedPercent
+			break
+		}
+
+	}
+
 	// Username
 	username := os.Getenv("USER")
 	// Hostname
@@ -89,5 +112,5 @@ func main() {
 		log.Fatal("Can't get hostname. Please check your /etc/hostname file.")
 	}
 
-	fmt.Printf("\n💾 ∙ OS:       %s\n🐧 ∙ Kernel    %s %s\n🔧 ∙ CPU:      %s | %s cores\n🧠 ∙ RAM:      %s/%s (%.1f%%)\n🧑 ∙ User:     %s\n🏠 ∙ Hostname: %s\n\n", osRelease[1], kernel, kernelVersion, cpuInfo.ModelName, cpuInfo.Cores, memInfo.Used, memInfo.Total, memInfo.Percent, username, hostname)
+	fmt.Printf("\n💾 ∙ OS:       %s\n🐧 ∙ Kernel    %s %s\n🔧 ∙ CPU:      %s | %s cores\n🧠 ∙ RAM:      %s/%s (%.1f%%)\n💾 ∙ DISK (%s): %d MiB/%d MiB Used (%.1f%%)\n🧑 ∙ User:     %s\n🏠 ∙ Hostname: %s\n\n", osRelease[1], kernel, kernelVersion, cpuInfo.ModelName, cpuInfo.Cores, memInfo.Used, memInfo.Total, memInfo.Percent, diskContent.MainPart, diskContent.Used, diskContent.Total, diskContent.Percent, username, hostname)
 }
